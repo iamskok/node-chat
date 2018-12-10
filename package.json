@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "global": "^4.3.2",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "formidable": "^1.2.1"
+  }
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Room</title>
+		<style>
+			#chat-history {
+				overflow-y: auto;
+				background-color: #eee;
+				height: 400px;
+				padding: 15px;
+				margin: 15px;
+				width: 50%;
+			}
+			input,
+			img {
+				margin: 15px;
+			}
+		</style>
+		<link rel="stylesheet" type="text/css" href="/static/styles/index.css">
+		<link rel="stylesheet" type="text/css" href="/static/styles/index-2.css">
+	</head>
+
+	<body>
+		<h1 id="room-title">Room: <!--- room-title ---></h1>
+		<h3>Logged in as: <!--- username ---></h3>
+
+		<form method="POST" action="/send-message" id="message-form">
+			<input type="text" placeholder="Message" name="message" id="message">
+			<input id="room-id" type="text" name="room" value="<!--- room-id --->" hidden>
+
+			<input type="submit" value="Submit" id="submit-message">
+		</form>
+
+		<div id="chat-history">
+			<!--- messages --->
+		</div>
+
+		<script src="/static/scripts/room.js"></script>
+	</body>
+</html>
