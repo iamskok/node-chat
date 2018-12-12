@@ -3,7 +3,7 @@ const submitMessage = document.getElementById('submit-message').addEventListener
 	const form = document.getElementById('message-form');
 	const formData = new FormData(form);
 
-	console.log('message formData', [...formData.entries()]);
+	//console.log('message formData', [...formData.entries()]);
 	const url = form.getAttribute('action');
 
 	(async () => {
@@ -12,7 +12,7 @@ const submitMessage = document.getElementById('submit-message').addEventListener
 			body: formData
 		});
 
-		console.log('rawResponse:', rawResponse);
+		//console.log('rawResponse:', rawResponse);
 
 		if (rawResponse.status !== 200) {
 			if (rawResponse.statusText) {
@@ -25,15 +25,18 @@ const submitMessage = document.getElementById('submit-message').addEventListener
 });
 
 (function() {
-	let messages = [];
-	const id = document.getElementById('room-id').value;
-	messages = Array.from(document.querySelectorAll('.message'))
-		.map(item => parseInt(item.dataset.date))
-		.sort((a, b) => a > b);
-
-
 	function polling() {
-		let lastDate = messages[messages.length - 1] || 0;
+		let messages = Array.from(document.querySelectorAll('.message'));
+		const id = document.getElementById('room-id').value;
+		messageDates = Array.from(messages)
+			.map(item => parseInt(item.dataset.date))
+			.sort((a, b) => a > b);
+		//let lastDate = messages[messages.length - 1] || 0;
+		let lastDate = 0;
+		if (messageDates.length) {
+			lastDate = messageDates[messages.length - 1];
+		}
+		console.log('>>>>>>>>>>>>>>', lastDate);
 		const request = new XMLHttpRequest();
 		request.addEventListener('load', function() {
 			let data;
@@ -42,21 +45,20 @@ const submitMessage = document.getElementById('submit-message').addEventListener
 			} catch(e) {
 				data = [];
 			}
-			console.log('Polling from client:', data);
+			console.log('Get message from the server via polling:', data);
 			messages = messages.concat(data);
 			data.forEach(msg => {
 				const div = document.createElement('div');
 				document.getElementById('chat-history').appendChild(div);
 				div.outerHTML = msg;
 			});
-			console.log('polling from client 2');
-			// polling();
+			polling();
 		});
 
 		request.open("GET", `http://localhost:5000/polling?id=${id}&last=${lastDate}`);
 		request.send();
 	}
-	polling();	
+	polling();
 })();
 
 // (function() {
@@ -80,7 +82,7 @@ const submitMessage = document.getElementById('submit-message').addEventListener
 
 // 			polling();
 // 		});
-		
+
 // 		let id;
 
 // 		if (!messages.length) {
