@@ -51,7 +51,6 @@ function broadcast(roomId) {
 		console.log('broadcast 4', messages);
 		res.end(JSON.stringify(messages));
 	});
-	responses.length = 0;
 }
 
 module.exports = {
@@ -116,6 +115,18 @@ module.exports = {
 		} else {
 			console.log('Polling - routes lastDate:::', lastDate, typeof lastDate);
 			res.lastDate = lastDate;
+			res.on('close', () => {
+				const index = responses.indexOf(res);
+				if (index > -1) {
+					responses.splice(index, 1);
+				}
+			});
+			res.on('finish', () => {
+				const index = responses.indexOf(res);
+				if (index > -1) {
+					responses.splice(index, 1);
+				}
+			});
 			responses.push(res);
 		}
 		console.log('MESSAGES', messages);
@@ -143,12 +154,15 @@ module.exports = {
 		if (req.method === 'POST') {
 			const id = req.body.id;
 			const password = req.body.password;
-
-			res.writeHead(200, {'Content-type': 'text/html; charset=UTF-8'});
 			const room = manager.getRoomById(id);
 			console.log('id', id);
 			console.log('password', password);
 			console.log('room', room);
+			if (!room) {
+				res.statusCode = 404;
+				return res.end('Room not found!');
+			}
+			res.writeHead(200, {'Content-type': 'text/html; charset=UTF-8'});
 			if (room.password && room.password !== password) {
 				res.statusCode = 403;
 				return res.end('You password is not correct!');
