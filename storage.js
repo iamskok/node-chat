@@ -26,11 +26,29 @@ module.exports = class Storage {
 		Loader.loadUsers()
 			.then(users => this.users = users)
 			.catch(error => console.error(error));
+
+		Loader.loadRooms()
+			.then(rooms => this.rooms = rooms)
+			.catch(error => console.error(error));
+
+		Loader.loadMessages()
+			.then(messages => {
+				this.rooms.forEach((room) => {
+					this.structure[room.id] = [];
+				});
+				console.log('OOO', this.structure, this.rooms);
+				messages.forEach((message) => {
+					console.log('ROOMS', this.rooms);
+					this.structure[message.room].push(message);
+				});
+				this.messages = messages;
+			})
+			.catch(error => console.error(error));
 	}
 
-	structureData(data) {
-		this.structure = data;
-	}
+	// structureData(data) {
+	// 	this.structure = data;
+	// }
 
 	addMessage(message) {
 		const roomId = message.room;
@@ -43,6 +61,7 @@ module.exports = class Storage {
 			console.error('Storage.addMessage roomId is not found');
 		}
 		console.log('structure:', this.structure);
+		Loader.addMessage(message);
 	}
 
 	removeMessage(id, roomId) {
@@ -53,6 +72,7 @@ module.exports = class Storage {
 		console.log('storage "new room"', room);
 		this.rooms.push(room);
 		this.structure[room.id] = [];
+		Loader.addRoom(room);
 	}
 
 	getRooms() {
@@ -64,6 +84,7 @@ module.exports = class Storage {
 	}
 
 	getMessages(roomId) {
+		console.log('GET_MESSAGES', roomId, this.structure[roomId], this.structure);
 		return this.structure[roomId];
 	}
 
@@ -98,10 +119,10 @@ module.exports = class Storage {
 		let i;
 		for (i = 0; i < this.users.length; i++) {
 			if (this.users[i].id === id) {
+				console.log('FINDUSERBYID::::::', id, this.users);
 				return this.users[i];
 			}
 		}
-		console.log('FINDUSERBYID::::::', id, this.users);
 		return null;
 	}
 
@@ -122,6 +143,7 @@ module.exports = class Storage {
 		for (i = 0; i < this.users.length; i++) {
 			if (this.users[i].id === id) {
 				this.users[i].username = username;
+				Loader.writeUsers(this.users);
 				return this.users[i];
 			}
 		}

@@ -181,7 +181,7 @@ module.exports = {
 				messages.forEach(message => {
 					console.log('MESSAGE:', message);
 					message = {...message};
-					message['author'] = storage.findUserById(message.author)
+					message['author'] = storage.findUserById(message.author);
 					messagesHTML += getMessageItemHTML(message);
 				});
 

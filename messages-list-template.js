@@ -5,7 +5,8 @@ module.exports = (message) => {
 	return `<div 
 		id="message-${message.id}" 
 		data-id="${message.id}" 
-		data-date="${message.date}" 
+		data-date="${message.date}"
+		data-room="${message.room}"
 		class="message"
 	>
 		<b>${message.author.username}</b>: <span>${message.content}</span> <span>${date}</span>
