@@ -38,19 +38,20 @@ function createHTML(template, context) {
 
 function broadcast(roomId) {
 	console.log('broadcast 1', roomId, responses.length);
-	responses.forEach(res => {
-		console.log('broadcast 2', res.lastDate);
-		const messages = storage.getLastMessages(roomId, res.lastDate).map(msg => {
-			console.log('broadcast 3', roomId);
-			// console.log('broadcast - User ID:', msg.author);
-			msg = {...msg};
-			msg['author'] = storage.findUserById(msg.author);
-			console.log('Polling from server:', getMessageItemHTML(msg));
-			return getMessageItemHTML(msg);
+	const roomUsers = storage.getRoomUsers(roomId);
+	responses.filter(res => roomUsers.includes(res.user.id))
+		.forEach(res => {
+			console.log('broadcast 2', res.lastDate);
+			const messages = storage.getLastMessages(roomId, res.lastDate).map(msg => {
+				console.log('broadcast 3', roomId);
+				msg = {...msg};
+				msg['author'] = storage.findUserById(msg.author);
+				console.log('Polling from server:', getMessageItemHTML(msg));
+				return getMessageItemHTML(msg);
+			});
+			console.log('broadcast 4', messages);
+			res.end(JSON.stringify(messages));
 		});
-		console.log('broadcast 4', messages);
-		res.end(JSON.stringify(messages));
-	});
 }
 
 module.exports = {
@@ -72,6 +73,8 @@ module.exports = {
 				'username': req.user.username || ''
 			};
 			const html = createHTML(data, context);
+			storage.removeUserFromRoom(req.user.id);
+			console.log('root removeUserFromRoom', storage.removeUserFromRoom(req.user.id));
 			res.end(html);
 		});
 	},
@@ -127,6 +130,7 @@ module.exports = {
 					responses.splice(index, 1);
 				}
 			});
+			res.user = req.user;
 			responses.push(res);
 		}
 		console.log('MESSAGES', messages);
@@ -194,10 +198,16 @@ module.exports = {
 				const html = createHTML(data, context);
 				console.log('HTML from POST', html);
 				console.log('USERS:', storage.users);
+				storage.removeUserFromRoom(req.user.id);
+				storage.addUserInRoom(id, req.user.id);
+				console.log('room getRoomUsers', storage.getRoomUsers(id));
+				console.log('### USER ID', req.user.id);
 				res.end(html);
 			});
 		} else {
 			const id = req.pathArray[0];
+			console.log('GET req.pathArray', req.pathArray);
+			console.log('GET id', id);
 			const room = manager.getRoomById(id);
 			if (room.password) {
 				return res.end('Private room');
@@ -227,6 +237,10 @@ module.exports = {
 				};
 				const html = createHTML(data, context);
 				console.log('HTML from GET', html);
+				console.log('### USER ID', req.user.id);
+				storage.removeUserFromRoom(req.user.id);
+				storage.addUserInRoom(id, req.user.id);
+				console.log('room /GET getRoomUsers', storage.getRoomUsers(id));
 				res.end(html);
 			});
 

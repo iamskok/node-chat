@@ -18,6 +18,8 @@ module.exports = class Storage {
 		this.structure = {};
 		this.sessions = [];
 		this.responses = [];
+		this.roomUsers = {};
+		this.userRoom = {};
 
 		Loader.loadSessions()
 			.then(sessions => this.sessions = sessions)
@@ -100,6 +102,28 @@ module.exports = class Storage {
 	addUser(user) {
 		this.users.push(user);
 		Loader.addUser(user);
+	}
+
+	addUserInRoom(roomId, userId) {
+		if (!this.roomUsers[roomId]) {
+			this.roomUsers[roomId] = [];
+		}
+		this.roomUsers[roomId].push(userId);
+		this.userRoom[userId] = roomId;
+	}
+
+	removeUserFromRoom(userId) {
+		if (this.userRoom[userId]) {
+			const roomId = this.userRoom[userId];
+			const index = this.roomUsers[roomId].indexOf(userId);
+			if (index > -1) {
+				this.roomUsers[roomId].splice(index, 1)
+			}
+		}
+	}
+
+	getRoomUsers(roomId) {
+		return this.roomUsers[roomId];
 	}
 
 	findUser(sid) {

@@ -43,9 +43,13 @@ function parsePath(req, res) {
 	// 	pathName = 'notFound';
 	// }
 
+
 	const pathArray = pathName.split('/');
+	console.log('Middleware pathArray', pathArray);
+
 	pathName = pathArray[0];
 	req.pathArray = pathArray.slice(1);
+	console.log('Middleware req.pathArray', req.pathArray);
 	req.pathName = pathName;
 }
 

@@ -1,5 +1,13 @@
-Send Message
+1. Перенос сессии
+2. Ошибка
+```
+TypeError: Cannot read property 'push' of undefined
+    at messages.forEach (/Users/skok/dev/node-chat-v2/storage.js:42:35)
+    at Array.forEach (<anonymous>)
+    at Storage.Loader.loadMessages.then.messages (/Users/skok/dev/node-chat-v2/storage.js:40:14)
+```
 
+Send Message
 
 - Create classes User, Room, Message.
 - Room contains array of Message objects.
