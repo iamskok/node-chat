@@ -59,3 +59,39 @@ if (document.getElementById('rooms')) {
 		document.querySelector('#room input[type="submit"]').click();
 	});
 }
+
+window.addEventListener('click', (e) => {
+	const userSecret = document.getElementById('user-secret');
+	if (userSecret.value) {
+		userSecret.select();
+		document.execCommand('copy');
+	}
+});
+// document.getElementById('get-secret').blur();
+// const userSecret = document.getElementById('user-secret');
+// userSecret.focus();
+// // document.designMode = 'on';
+// userSecret.value = 'sfewfwefewf';
+// userSecret.select();
+// document.execCommand('copy');
+
+let secret = '';
+
+const getSecret = document.getElementById('get-secret')
+	.addEventListener('click', (event) => {
+		console.log('get-secret');
+
+		const xhr = new XMLHttpRequest();
+		xhr.open('GET', '/get-secret', true);
+		xhr.send();
+
+		function onLoad(e) {
+			if (xhr.status == 200) {
+				const userSecret = document.getElementById('user-secret');
+				userSecret.value = xhr.responseText;
+				alert('Click on the screen to copy user secret in your clipboard');
+			}
+		}
+		xhr.onload = onLoad;
+	}
+);

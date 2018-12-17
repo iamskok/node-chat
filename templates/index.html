@@ -23,25 +23,23 @@
 
 	<body>
 		<h3>Login</h3>
-
 		<form method="POST" action="/username" id="username-form">
 			<input type="text" placeholder="Username" value="<!--- username --->" name="username" id="username">
-
 			<input type="submit" value="Submit" id="submit-username">
 		</form>
+
+		<button id="get-secret">Get secret</button>
+		<input type="text" id="user-secret" style="opacity: 0;">
 
 		<br>
 
 		<h3>Secret</h3>
-
-		<form method="POST" action="/secret" id="secret-form">
+		<form method="POST" action="/change-session" id="secret-form">
 			<input type="text" placeholder="Secret" name="secret" id="secret">
-
 			<input type="submit" value="Submit" id="submit-secret">
 		</form>
 
 		<h3>Create new room</h3>
-
 		<form method="POST" action="/new-room" id="new-room" enctype="multipart/form-data">
 			<input type="text" placeholder="Room name" name="roomname" id="add-room">
 			<input type="text" name="password" placeholder="password" id="room-password">

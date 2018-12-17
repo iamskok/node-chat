@@ -41,7 +41,9 @@ module.exports = class Storage {
 				console.log('OOO', this.structure, this.rooms);
 				messages.forEach((message) => {
 					console.log('ROOMS', this.rooms);
-					this.structure[message.room].push(message);
+					if (this.structure[message.room]) {
+						this.structure[message.room].push(message);	
+					}
 				});
 				this.messages = messages;
 			})
@@ -126,6 +128,10 @@ module.exports = class Storage {
 		return this.roomUsers[roomId];
 	}
 
+	getUserBySecret(secret) {
+		return this.users.filter(user => user.secret === secret)[0];
+	}
+
 	findUser(sid) {
 		let i;
 		for (i = 0; i < this.sessions.length; i++) {
@@ -148,6 +154,10 @@ module.exports = class Storage {
 			}
 		}
 		return null;
+	}
+
+	getSessionByUser(userId) {
+		return this.sessions.filter(session => session.user === userId)[0];
 	}
 
 	getUserBySession(sid) {
