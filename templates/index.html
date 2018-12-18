@@ -18,13 +18,20 @@
 			}
 		</style>
 		<link rel="stylesheet" type="text/css" href="/static/styles/index.css">
-		<link rel="stylesheet" type="text/css" href="/static/styles/index-2.css">
 	</head>
 
 	<body>
+		<h2>Node.js Chat</h2>
+
 		<h3>Login</h3>
 		<form method="POST" action="/username" id="username-form">
-			<input type="text" placeholder="Username" value="<!--- username --->" name="username" id="username">
+			<input 
+				type="text" 
+				id="username" 
+				placeholder="Username" 
+				value="<!--- username --->" 
+				name="username"
+			>
 			<input type="submit" value="Submit" id="submit-username">
 		</form>
 
@@ -35,15 +42,15 @@
 
 		<h3>Secret</h3>
 		<form method="POST" action="/change-session" id="secret-form">
-			<input type="text" placeholder="Secret" name="secret" id="secret">
+			<input type="text" id="secret" placeholder="Secret" name="secret">
 			<input type="submit" value="Submit" id="submit-secret">
 		</form>
 
 		<h3>Create new room</h3>
 		<form method="POST" action="/new-room" id="new-room" enctype="multipart/form-data">
-			<input type="text" placeholder="Room name" name="roomname" id="add-room">
-			<input type="text" name="password" placeholder="password" id="room-password">
-			<input type="submit" value="Submit" id="submit-room">
+			<input type="text" id="add-room" placeholder="Room name" name="roomname">
+			<input type="text" id="room-password" name="password" placeholder="password">
+			<input type="submit" id="submit-room" value="Submit">
 		</form>
 		
 		<form method="POST" action="/room" id="room" hidden>
@@ -59,9 +66,5 @@
 		</ul>
 
 		<script src="/static/scripts/index.js"></script>
-
-		<!-- <img src="/static/images/img.jpeg" alt="Meow">
-		<img src="/static/images/img-2.jpeg" alt="Meow 2"> -->
-		<script src="/static/scripts/test.js"></script>
 	</body>
 </html>

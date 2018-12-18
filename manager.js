@@ -2,11 +2,11 @@ const crypto = require('crypto');
 const uuid = require('uuid/v1');
 
 const Storage = require('./storage');
-const storage = new Storage();
 const User = require('./user');
 const Room = require('./room');
 const Message = require('./message');
 
+const storage = new Storage();
 let instance = null;
 
 module.exports = class Manager {
@@ -29,7 +29,6 @@ module.exports = class Manager {
 	newRoom(title, author, messages, password) {
 		const roomId = uuid();
 		const room = new Room(roomId, title, author, messages, password);
-		console.log('manager "new room". title', title);
 		storage.addRoom(room);
 		return room;
 	}
@@ -39,14 +38,7 @@ module.exports = class Manager {
 	}
 
 	getRoomById(id) {
-		console.log('room-id', id);
-		console.log('rooms:', storage.getRooms());
-		return storage.getRooms().filter((room) => {
-			if (room.id === id) {
-				console.log('XXXX', room);
-			}
-			return room.id === id;
-		})[0];
+		return storage.getRooms().filter(room => room.id === id)[0];
 	}
 
 	removeRoom(id) {
@@ -54,7 +46,7 @@ module.exports = class Manager {
 	}
 	
 	createSession(userId) {
-		const secret = 'abcdefg';
+		const secret = 'session secret';
 		const sid = crypto.createHmac('sha512', secret)
 			.update(uuid())
 			.digest('hex');
@@ -69,7 +61,7 @@ module.exports = class Manager {
 
 	createUser() {
 		const userId = uuid();
-		const secret = 'User\'s secret';
+		const secret = 'user secret';
 		const hash = crypto.createHmac('sha512', secret)
 			.update(uuid())
 			.digest('hex');
@@ -82,6 +74,4 @@ module.exports = class Manager {
 		if (!sid) return null;
 		return storage.findUser(sid);
 	}
-
-	broadcast() {}
 }

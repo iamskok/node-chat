@@ -28,8 +28,13 @@ module.exports = class Loader {
 				messages.length = 0;
 				const rawMessages = JSON.parse(data);
 				rawMessages.forEach(message => {
-					messages.push(new Message(message.author, message.content, message.room, message.date, message.id));
-				})
+					messages.push(new Message(
+						message.author, 
+						message.content, 
+						message.room, 
+						message.date, 
+						message.id));
+				});
 				resolve([...messages]);
 			});
 		});
@@ -37,9 +42,7 @@ module.exports = class Loader {
 
 	static writeMessages(data) {
 		fs.writeFile(MESSAGES_FILE_PATH, JSON.stringify(data), (err) => {
-			if (err) {
-				console.error('writeMessages:', err);
-			}
+			if (err) console.error('writeMessages:', err);
 		});
 	}
 
@@ -61,8 +64,14 @@ module.exports = class Loader {
 				rooms.length = 0;
 				const rawRooms = JSON.parse(data);
 				rawRooms.forEach(room => {
-					rooms.push(new Room(room.id, room.title, room.author, room.messages, room.password, room.created));
-				})
+					rooms.push(new Room(
+						room.id, 
+						room.title, 
+						room.author, 
+						room.messages, 
+						room.password, 
+						room.created));
+				});
 				resolve([...rooms]);
 			});
 		});
@@ -70,9 +79,7 @@ module.exports = class Loader {
 
 	static writeRooms(data) {
 		fs.writeFile(ROOMS_FILE_PATH, JSON.stringify(data), (err) => {
-			if (err) {
-				console.error('writeRooms:', err);
-			}
+			if (err) console.error('writeRooms:', err);
 		});
 	}
 
@@ -90,7 +97,6 @@ module.exports = class Loader {
 					} else {
 						return reject(err);
 					}
-
 				}
 				sessions = JSON.parse(data);
 				resolve([...sessions]);
@@ -117,12 +123,15 @@ module.exports = class Loader {
 						return reject(err);
 					}
 				}
-				// Make sure users don't have any other data
 				users.length = 0;
 				const rawUsers = JSON.parse(data);
 				rawUsers.forEach(user => {
-					users.push(new User(user.id, user.username, user.secret, user.created));
-				})
+					users.push(new User(
+						user.id, 
+						user.username, 
+						user.secret, 
+						user.created));
+				});
 				resolve([...users]);
 			});
 		});

@@ -1,1 +1,0 @@
-console.log('Welcome to Node.js chat from `./index-2.js`');

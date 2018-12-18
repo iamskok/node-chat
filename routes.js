@@ -1,98 +1,72 @@
-const Manager = require('./manager');
-const manager = new Manager();
-const Storage = require('./storage');
-const storage = new Storage();
-const getRoomItemHTML = require('./rooms-list-template');
-const getMessageItemHTML = require('./messages-list-template');
-
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
+const Manager = require('./manager');
+const Storage = require('./storage');
+const getRoomItemHTML = require('./rooms-list-template');
+const getMessageItemHTML = require('./messages-list-template');
+
+const manager = new Manager();
+const storage = new Storage();
+
 const responses = [];
 
 function getQuery(req) {
-	const parsedUrl = url.parse(req.url, true);
-	const query = parsedUrl.query;
-
-	return query;
+	return url.parse(req.url, true).query;
 }
 
 function createHTML(template, context) {
 	let HTML = template.toString();
-	console.log('BEFORE', HTML);
 	for (key in context) {
-		console.log('context.hasOwnProperty(key)', context.hasOwnProperty(key));
 		if (context.hasOwnProperty(key)) {
-			// Avoid spacing symbols
-			// `\s*` doesn't work in this case
 			const re = new RegExp(`<!---[ ]*${key}[ ]*--->`, 'gi');
 			HTML = HTML.replace(re, context[key]);
-			console.log('key', key);
-			console.log('context[key]', context[key]);
 		}
 	}
-	console.log('AFTER', HTML);
 	return HTML;
 }
 
 function broadcast(roomId) {
-	console.log('broadcast 1', roomId, responses.length);
 	const roomUsers = storage.getRoomUsers(roomId);
-	responses.filter(res => roomUsers.includes(res.user.id))
-		.forEach(res => {
-			console.log('broadcast 2', res.lastDate);
-			const messages = storage.getLastMessages(roomId, res.lastDate).map(msg => {
-				console.log('broadcast 3', roomId);
-				msg = {...msg};
-				msg['author'] = storage.findUserById(msg.author);
-				console.log('Polling from server:', getMessageItemHTML(msg));
-				return getMessageItemHTML(msg);
-			});
-			console.log('broadcast 4', messages);
-			res.end(JSON.stringify(messages));
+	responses.filter(res => roomUsers.includes(res.user.id)).forEach(res => {
+		const messages = storage.getLastMessages(roomId, res.lastDate).map(msg => {
+			msg = {...msg};
+			msg['author'] = storage.findUserById(msg.author);
+			return getMessageItemHTML(msg);
 		});
+		res.end(JSON.stringify(messages));
+	});
 }
 
 module.exports = {
 	root: function rootPath(req, res) {
 		const query = getQuery(req);
-		// console.log('USER ====', req.user);
 		res.writeHead(200, {'Content-type': 'text/html; charset=UTF-8'});
-
 		fs.readFile(path.join(__dirname, 'templates/index.html'), (err, data) => {
 			if (err) throw err;
 			const rooms = storage.getRooms();
 			let roomsHTML = '';
-			rooms.forEach(room => {
-				roomsHTML += getRoomItemHTML(room);
-			});
-
+			rooms.forEach(room => roomsHTML += getRoomItemHTML(room));
 			let context = {
 				'rooms': roomsHTML,
 				'username': req.user.username || ''
 			};
 			const html = createHTML(data, context);
 			storage.removeUserFromRoom(req.user.id);
-			console.log('root removeUserFromRoom', storage.removeUserFromRoom(req.user.id));
 			res.end(html);
 		});
 	},
 	chat: function chatPath(req, res) {
 		const query = getQuery(req);
 		res.id = query.id;
-		// Check if user got all the messages
 		if (res.id < storage.messages.length) {
 			return res.end(JSON.stringify(storage.messages.slice(res.id)));
 		}
-
 		storage.addResponse(res);
-
 		let finished = false;
 		res.on('close', function() {
-			if (!finished) {
-				storage.removeResponse(res);
-			}
+			if (!finished) storage.removeResponse(res);
 		});
 		res.on('finish', function() {
 			finished = true;
@@ -100,47 +74,36 @@ module.exports = {
 		});
 	},
 	polling: function(req, res) {
-		console.log('start polling');
 		const query = getQuery(req);
 		const roomId = query.id;
 		const lastDate = query.last || 0;
-		console.log('QUERY', query);
-		console.log('lastDate', lastDate);
 		const messages = storage.getLastMessages(roomId, lastDate).map(msg => {
-			console.log('polling - User ID:', msg.author);
 			msg = {...msg};
 			msg['author'] = storage.findUserById(msg.author);	
 			return getMessageItemHTML(msg);
 		});
 		if (messages.length) {
-			console.log('finish polling');
 			res.end(JSON.stringify(messages));
 		} else {
-			console.log('Polling - routes lastDate:::', lastDate, typeof lastDate);
 			res.lastDate = lastDate;
 			res.on('close', () => {
 				const index = responses.indexOf(res);
-				if (index > -1) {
-					responses.splice(index, 1);
-				}
+				if (index > -1) responses.splice(index, 1);
 			});
 			res.on('finish', () => {
 				const index = responses.indexOf(res);
-				if (index > -1) {
-					responses.splice(index, 1);
-				}
+				if (index > -1) responses.splice(index, 1);
 			});
 			res.user = req.user;
 			responses.push(res);
 		}
-		console.log('MESSAGES', messages);
 	},
 	'new-room': function newRoomPath(req, res) {
+		let title, author, messages, password;
 		if (!req.user.username) {
 			res.statusCode = 403;
-			return res.end('You must have your username!');
+			return res.end('You must have your username');
 		}
-		let title, author, messages, password;
 		if (req.method === 'POST') {
 			title = req.body.roomname;
 			author = req.user.id;
@@ -159,36 +122,26 @@ module.exports = {
 			const id = req.body.id;
 			const password = req.body.password;
 			const room = manager.getRoomById(id);
-			console.log('id', id);
-			console.log('password', password);
-			console.log('room', room);
 			if (!room) {
 				res.statusCode = 404;
-				return res.end('Room not found!');
+				return res.end('Room not found');
 			}
 			res.writeHead(200, {'Content-type': 'text/html; charset=UTF-8'});
 			if (room.password && room.password !== password) {
 				res.statusCode = 403;
-				return res.end('You password is not correct!');
+				return res.end('You password is not correct');
 			}
-
 			fs.readFile(path.join(__dirname, 'templates/room.html'), (err, data) => {
 				if (err) throw err;
-
 				let title = '';
-				if (room) {
-					title = room.title;
-				}
-
+				if (room) title = room.title;
 				const messages = storage.getMessages(id);
 				let messagesHTML = '';
 				messages.forEach(message => {
-					console.log('MESSAGE:', message);
 					message = {...message};
 					message['author'] = storage.findUserById(message.author);
 					messagesHTML += getMessageItemHTML(message);
 				});
-
 				let context = {
 					'username': req.user.username,
 					'room-title': title,
@@ -196,39 +149,25 @@ module.exports = {
 					'messages': messagesHTML
 				};
 				const html = createHTML(data, context);
-				console.log('HTML from POST', html);
-				console.log('USERS:', storage.users);
 				storage.removeUserFromRoom(req.user.id);
 				storage.addUserInRoom(id, req.user.id);
-				console.log('room getRoomUsers', storage.getRoomUsers(id));
-				console.log('### USER ID', req.user.id);
 				res.end(html);
 			});
 		} else {
 			const id = req.pathArray[0];
-			console.log('GET req.pathArray', req.pathArray);
-			console.log('GET id', id);
 			const room = manager.getRoomById(id);
-			if (room.password) {
-				return res.end('Private room');
-			}
+			if (room.password) return res.end('Private room');
 			fs.readFile(path.join(__dirname, 'templates/room.html'), (err, data) => {
 				if (err) throw err;
-
 				let title = '';
-				if (room) {
-					title = room.title;
-				}
-
+				if (room) title = room.title;
 				const messages = storage.getMessages(id);
 				let messagesHTML = '';
 				messages.forEach(message => {
-					console.log('MESSAGE:', message);
 					message = {...message};
 					message['author'] = storage.findUserById(message.author);
 					messagesHTML += getMessageItemHTML(message);
 				});
-
 				let context = {
 					'username': req.user.username,
 					'room-title': title,
@@ -236,16 +175,10 @@ module.exports = {
 					'messages': messagesHTML
 				};
 				const html = createHTML(data, context);
-				console.log('HTML from GET', html);
-				console.log('### USER ID', req.user.id);
 				storage.removeUserFromRoom(req.user.id);
 				storage.addUserInRoom(id, req.user.id);
-				console.log('room /GET getRoomUsers', storage.getRoomUsers(id));
 				res.end(html);
 			});
-
-			// res.statusCode = 405;
-			// res.end('Method is not allowed');
 		}
 	},
 	username: function (req, res) {
@@ -263,23 +196,35 @@ module.exports = {
 		}
 	},
 	'send-message': function sendPath(req, res) {
-		// const query = getQuery(req);
-		// manager.newMessage(query.userId, query.message, query.roomId);
-		// res.end();
 		const message = req.body.message.trim();
 		const roomId = req.body.room;
-		// const message = (req.body.message || '').trim();
-		// manager.newMessage(req.user.id, message, req.body.room);
-		console.log('message', message);
-		console.log('room:', req.body.room);
 		manager.newMessage(message, req.user.id, roomId);
 		res.end();
 		broadcast(roomId);
 	},
+	'get-secret': function getSecret(req, res) {
+		if (req.user) {
+			const secret = req.user.secret;
+			res.end(secret);
+		} else {
+			res.statusCode = 403;
+			res.end();
+		}
+	},
+	'change-session': function changeSession(req, res) {
+		const secret = req.body.secret;
+		const user = storage.getUserBySecret(secret);
+		if (user) {
+			req.user = user;
+			const session = storage.getSessionByUser(user.id);
+			res.setHeader('Set-Cookie', [`sid=${session.id}; HttpOnly; Expires=${new Date(Date.now() + 2592000000)}`]);
+		}
+		res.writeHead(301, {Location: '/'});
+		res.end();
+	},
 	static: function staticPath(req, res) {
 		const parsedUrl = url.parse(req.url, false);
 		const nestedPathName = parsedUrl.pathname;
-		const pathName = nestedPathName.replace(/\//g, '');
 		const query = getQuery(req);
 
 		const IMG_REGEX = new RegExp('\/images\/.*\.(gif|jpg|jpe?g|tiff|png|webp)$', 'ig');
@@ -297,16 +242,12 @@ module.exports = {
 			});
 		} else if (JS_REGEX.test(nestedPathName)) {
 			fs.readFile(path.join(__dirname, 'static', 'scripts', FILENAME_REGEX), (err, data) => {
-				res.writeHead(200, {
-					'Content-type': 'text/javascript; charset=UTF-8'
-				});
+				res.writeHead(200, {'Content-type': 'text/javascript; charset=UTF-8'});
 				res.end(data);
 			});
 		} else if (CSS_REGEX.test(nestedPathName)) {
 			fs.readFile(path.join(__dirname, 'static', 'styles', FILENAME_REGEX), (err, data) => {
-				res.writeHead(200, {
-					'Content-type': 'text/css; charset=UTF-8'
-				});
+				res.writeHead(200, {'Content-type': 'text/css; charset=UTF-8'});
 				res.end(data);
 			});
 		} else {
