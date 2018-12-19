@@ -9,6 +9,6 @@ module.exports = (message) => {
 		data-room="${message.room}"
 		class="message"
 	>
-		<b>${message.author.username}</b>: <span>${message.content}</span> <span>${date}</span>
+		<b>${message.author.username}</b>: <span>${message.content.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')}</span> <span>${date}</span>
 	</div>`.replace(/[\t\n]/g, '');	
 }
