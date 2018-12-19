@@ -1,16 +1,18 @@
-const submitRoom = document.getElementById('submit-room').addEventListener('click', (event) => {
-	event.preventDefault();
+const submitRoom = document.getElementById('submit-room').addEventListener('click', async (e) => {
+	e.preventDefault();
 	const form = document.getElementById('new-room');
 	const formData = new FormData(form);
 	const url = form.getAttribute('action');
-	(async() => {
+	if (formData.get('roomname')) {
+		form.elements['roomname'].value = '';
+		form.elements['password'].value = '';
 		const rawResponse = await fetch(url, {
 			method: 'POST',
 			body: formData
 		});
 		const html = await rawResponse.text();
 		document.getElementById('rooms').innerHTML += html;
-	})();
+	}
 });
 
 const submitUsername = document.getElementById('submit-username')

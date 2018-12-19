@@ -1,10 +1,10 @@
-const submitMessage = document.getElementById('submit-message')
-	.addEventListener('click', (e) => {
+const submitMessage = document.getElementById('submit-message').addEventListener('click', async (e) => {
 	e.preventDefault();
 	const form = document.getElementById('message-form');
 	const formData = new FormData(form);
 	const url = form.getAttribute('action');
-	(async() => {
+	if (formData.get('message')) {
+		form.elements['message'].value = '';
 		const rawResponse = await fetch(url, {
 			method: 'POST',
 			body: formData
@@ -16,7 +16,7 @@ const submitMessage = document.getElementById('submit-message')
 				alert('Server Error');
 			}
 		}
-	})();
+	}
 });
 
 (function() {
