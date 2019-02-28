@@ -16,7 +16,7 @@
 * Create a new public room.
 * Create a new private room.
 
-To create a **new user** go to the login form and submit a username. To transfer the user session you should **get the user secret** by clicking "Get secret" button and after that you can **login with the user secret** by pasting it in the secret form and hitting submit (your secret will look similar to `6b0fc1b6bfbaf27e4699f3baba4fe8927801ad07fd8df3bec2eddfb9b2217d`). **Create a public room** by submitting the room name in "Create new room" form. Having a private discussion? _No problem!_ **Create a private room** by including the password field.
+To create a new user go to the login form and submit a username. To transfer the user session you should get the user secret by clicking "Get secret" button and after that you can login with the user secret by pasting it in the secret form and hitting submit (your secret will look similar to 6b0fc1b6bfbaf27e4699f3baddfb9b2217d). Create a public room by submitting the room name in "Create new room" form. Having a private discussion? No problem! Create a private room by including the password field.
 
 <br />
 
