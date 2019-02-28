@@ -46,7 +46,7 @@ const submitMessage = document.getElementById('submit-message').addEventListener
 			});
 			polling();
 		});
-		request.open("GET", `http://localhost:5000/polling?id=${id}&last=${lastDate}`);
+		request.open("GET", `https://iamskok-node-chat.glitch.me/polling?id=${id}&last=${lastDate}`);
 		request.send();
 	}
 	polling();
